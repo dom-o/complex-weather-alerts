@@ -1,12 +1,12 @@
 var choo = require('choo');
 var html = require('choo/html');
 
-var app = choo();
+var main = require('./templates/main.js')
+var create = require('./templates/create.js')
 
-var main = function() {
-	return html`<div>complex weather alerts</div>`;
-}
+var app = choo()
 
-app.route('/', main);
+app.route('/', main)
+app.route('/create', create)
 
-app.mount('div');
+app.mount('div')
