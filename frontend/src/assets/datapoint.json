@@ -160,7 +160,7 @@
 			"type": "number"
 		},
 		"time": {
-			"description": "The UNIX time at which this data point begins. minutely data point are always aligned to the top of the minute, hourly data point objects to the top of the hour, and daily data point objects to midnight of the day, all according to the local time zone.",
+			"description": "The UNIX time at which this data point begins. Minutely data points are always aligned to the top of the minute, hourly data point objects to the top of the hour, and daily data point objects to midnight of the day, all according to the local time zone.",
 			"title": "Time",
 			"type": "number"
 		},
