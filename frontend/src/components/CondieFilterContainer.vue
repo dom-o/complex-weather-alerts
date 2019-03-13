@@ -10,32 +10,32 @@
 </template>
 
 <script>
-  import datapointSchema from '@/assets/datapoint.json'
-  import CondieFilter from './CondieFilter.vue'
-  import Vue from 'vue'
+import datapointSchema from '@/assets/datapoint.json'
+import CondieFilter from './CondieFilter.vue'
+import Vue from 'vue'
 
-  let nextCondieFilterId = 1
+let nextCondieFilterId = 1
 
-  export default {
-    name: 'CondieFilterContainer',
-    components: {CondieFilter},
-    methods: {
-      newCondieFilter() {
-        this.condieFilters.push({
+export default {
+  name: 'CondieFilterContainer',
+  components: {CondieFilter},
+  methods: {
+    newCondieFilter () {
+      this.condieFilters.push({
+        id: nextCondieFilterId++,
+        options: datapointSchema.properties
+      })
+    }
+  },
+  data: function () {
+    return {
+      condieFilters: [
+        {
           id: nextCondieFilterId++,
           options: datapointSchema.properties
-        })
-      }
-    },
-    data: function() {
-      return {
-        condieFilters: [
-          {
-            id: nextCondieFilterId++,
-            options: datapointSchema.properties
-          },
-        ]
-      }
+        }
+      ]
     }
   }
+}
 </script>
