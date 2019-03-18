@@ -8,10 +8,10 @@
     {{ selectedCond.description }}
     is
     <template v-if="selectedCond.type==='string'">
-      <input type="text" id="selectedText">
+      <input type="text" id="selectedText" v-model="selectData.string">
     </template>
     <template v-else-if="selectedCond.enum">
-      <select>
+      <select v-model="selectData.enum">
         <option v-for="item in selectedCond.enum" :key="item" :value="item">{{item}}</option>
       </select>
     </template>
@@ -19,12 +19,12 @@
       <select v-model="selectedNum">
         <option :key="'exactly'" :value="'exactly'">exactly</option>
         <option :key="'between'" :value="'between'">between</option>
-        <option :key="'more than'" :value="'more than'">more than</option>
-        <option :key="'less than'" :value="'less than'">less than</option>
+        <option :key="'more'" :value="'more'">more than</option>
+        <option :key="'less'" :value="'less'">less than</option>
       </select>
-      <input id="selectedNum1" type="number">
+      <input id="selectedNum1" type="number" v-model.number="selectData.number">
       <template v-if="selectedNum==='between'">
-        and <input type="number" id="selectedNum2">
+        and <input type="number" id="selectedNum2" v-model.number="selectData.range">
       </template>
     </template>
   </div>
@@ -42,7 +42,13 @@ export default {
   data () {
     return {
       selectedCond: {},
-      selectedNum: ''
+      selectedNum: '',
+      selectData: {
+        string: '',
+        enum: '',
+        number: '',
+        range: ''
+      }
     }
   }
 }
