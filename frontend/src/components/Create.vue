@@ -1,9 +1,38 @@
 <template>
 <div>
-  <form>
+  <form @submit.prevent="processForm">
     I like to go <input id="activity" name="activity" v-model="activity" type="text">
     at <input id="lat" name="lat" v-model="latitude" type="text"> <input id="lon" name="lon" v-model="longitude" type="text">
-    when the <CondieFilterContainer/>
+    when the <template v-for="filter in condieFilters">
+      <select :key="filter.id+'selectedOption'" v-model="filter.selectedOption" >
+        <option v-for="(option, optionName) in filter.options" :key="optionName" :value="option">
+          {{ option.title }}
+        </option>
+      </select>
+      {{ filter.selectedOption.description }}
+      is
+      <template v-if="filter.selectedOption.type==='string'">
+        <input :key="filter.id+'string'" type="text" id="selectedText" v-model="filter.selectData.string">
+      </template>
+      <template v-else-if="filter.selectedOption.enum">
+        <select :key="filter.id+'enum'" v-model="filter.selectData.enum">
+          <option v-for="item in filter.selectedOption.enum" :key="item" :value="item">{{item}}</option>
+        </select>
+      </template>
+      <template v-else-if="filter.selectedOption.type==='number'">
+        <select :key="filter.id+'compareOption'" v-model="filter.selectData.number.compareOption">
+          <option :key="'exactly'" :value="'exactly'">exactly</option>
+          <option :key="'between'" :value="'between'">between</option>
+          <option :key="'more'" :value="'more'">more than</option>
+          <option :key="'less'" :value="'less'">less than</option>
+        </select>
+        <input :key="filter.id+'num'" type="number" id="num" v-model.number="filter.selectData.number.num">
+        <template v-if="filter.selectData.number.compareOption==='between'">
+          and <input :key="filter.id+'range'" type="number" id="range" v-model.number="filter.selectData.number.range">
+        </template>
+      </template>
+    </template>
+    <button type="button" @click="newCondieFilter">more conditions</button>
     I'm free
       <input type="checkbox" id="monday" value="Monday" v-model="checkedDays"><label for="monday">Monday</label>
       <input type="checkbox" id="tuesday" value="Tuesday" v-model="checkedDays"><label for="tuesday">Tuesday</label>
@@ -30,17 +59,53 @@
 </template>
 
 <script>
-import CondieFilterContainer from './CondieFilterContainer.vue'
+import datapointSchema from '@/assets/datapoint.json'
+import CondieFilter from './CondieFilter.vue'
+
+let nextCondieFilterId = 1
 
 export default {
-  components: {CondieFilterContainer},
+  components: {CondieFilter},
   methods: {
+    processForm () {
+      console.log(this.$data)
+    },
+    newCondieFilter () {
+      this.condieFilters.push({
+        id: ++nextCondieFilterId,
+        options: datapointSchema.properties,
+        selectedOption: {},
+        selectData: {
+          string: '',
+          enum: '',
+          number: {
+            compareOption: '',
+            num: '',
+            range: ''
+          }
+        }
+      })
+    }
   },
   data () {
     return {
       activity: '',
       latitude: '',
       longitude: '',
+      condieFilters: [{
+        id: nextCondieFilterId,
+        options: datapointSchema.properties,
+        selectedOption: {},
+        selectData: {
+          string: '',
+          enum: '',
+          number: {
+            compareOption: '',
+            num: '',
+            range: ''
+          }
+        }
+      }],
       checkedDays: [],
       advanceNotice: '',
       email: ''
