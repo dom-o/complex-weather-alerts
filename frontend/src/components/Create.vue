@@ -3,9 +3,9 @@
   <form @submit.prevent="processForm">
     I like to go <input id="activity" name="activity" v-model="activity" type="text">
     at <input id="lat" name="lat" v-model="latitude" type="text"> <input id="lon" name="lon" v-model="longitude" type="text">
-    when the <template v-for="filter in condieFilters">
+    when the <template v-for="filter in filters">
       <select :key="filter.id+'selectedOption'" v-model="filter.selectedOption" >
-        <option v-for="(option, optionName) in filter.options" :key="optionName" :value="option">
+        <option v-for="(option, optionName) in filterOptions" :key="optionName" :value="option">
           {{ option.title }}
         </option>
       </select>
@@ -32,7 +32,7 @@
         </template>
       </template>
     </template>
-    <button type="button" @click="newCondieFilter">more conditions</button>
+    <button type="button" @click="newFilter">more conditions</button>
     I'm free
       <input type="checkbox" id="monday" value="Monday" v-model="checkedDays"><label for="monday">Monday</label>
       <input type="checkbox" id="tuesday" value="Tuesday" v-model="checkedDays"><label for="tuesday">Tuesday</label>
@@ -60,20 +60,18 @@
 
 <script>
 import datapointSchema from '@/assets/datapoint.json'
-import CondieFilter from './CondieFilter.vue'
 
-let nextCondieFilterId = 1
+let nextFilterId = 1
 
 export default {
-  components: {CondieFilter},
+  components: {},
   methods: {
     processForm () {
       console.log(this.$data)
     },
-    newCondieFilter () {
-      this.condieFilters.push({
-        id: ++nextCondieFilterId,
-        options: datapointSchema.properties,
+    newFilter () {
+      this.filters.push({
+        id: ++nextFilterId,
         selectedOption: {},
         selectData: {
           string: '',
@@ -92,9 +90,9 @@ export default {
       activity: '',
       latitude: '',
       longitude: '',
-      condieFilters: [{
-        id: nextCondieFilterId,
-        options: datapointSchema.properties,
+      filterOptions: datapointSchema.properties,
+      filters: [{
+        id: nextFilterId,
         selectedOption: {},
         selectData: {
           string: '',
