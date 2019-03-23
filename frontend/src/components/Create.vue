@@ -1,8 +1,8 @@
 <template>
 <div>
   <form @submit.prevent="processForm">
-    I like to go <input id="activity" name="activity" v-model="activity" type="text">
-    at <input id="lat" name="lat" v-model="latitude" type="text"> <input id="lon" name="lon" v-model="longitude" type="text">
+    I like to go <input v-model="activity" type="text">
+    at <input v-model.number="latitude" type="number" step="any" min="-90" max="90" required> <input v-model.number="longitude" type="number" step="any" min="-180" max="180" required>
     when the <template v-for="filter in filters">
       <select :key="filter.id+'selectedOption'" v-model="filter.selectedOption" >
         <option v-for="(option, optionName) in filterOptions" :key="optionName" :value="option">
@@ -12,7 +12,7 @@
       {{ filter.selectedOption.description }}
       is
       <template v-if="filter.selectedOption.type==='string'">
-        <input :key="filter.id+'string'" type="text" id="selectedText" v-model="filter.selectData.string">
+        <input :key="filter.id+'string'" type="text" v-model="filter.selectData.string">
       </template>
       <template v-else-if="filter.selectedOption.enum">
         <select :key="filter.id+'enum'" v-model="filter.selectData.enum">
@@ -26,11 +26,12 @@
           <option :key="'more'" :value="'more'">more than</option>
           <option :key="'less'" :value="'less'">less than</option>
         </select>
-        <input :key="filter.id+'num'" type="number" id="num" v-model.number="filter.selectData.number.num">
+        <input :key="filter.id+'num'" type="number" step="any" :min="filter.selectedOption.minimum" :max="filter.selectedOption.maximum" v-model.number="filter.selectData.number.num">
         <template v-if="filter.selectData.number.compareOption==='between'">
-          and <input :key="filter.id+'range'" type="number" id="range" v-model.number="filter.selectData.number.range">
+          and <input :key="filter.id+'range'" type="number" step="any" :min="filter.selectedOption.minimum" :max="filter.selectedOption.maximum" v-model.number="filter.selectData.number.range">
         </template>
       </template>
+      <button type="button" @click="removeFilter(filter.id)">remove this condition</button>
     </template>
     <button type="button" @click="newFilter">more conditions</button>
     I'm free
@@ -53,7 +54,7 @@
         <option value="7">7</option>
       </select>
     days in advance
-    Reach me at <input type="email" id="email" v-model="email" required>
+    Reach me at <input type="email" v-model="email" required>
     <input type="submit" value="Go">
   </form>
 </div>
@@ -62,20 +63,25 @@
 <script>
 import datapointSchema from '@/assets/datapoint.json'
 
-let nextFilterId = 1
+let nextFilterId = 0
 
 export default {
   components: {},
   watch: {
-    allSelected: function(val) {
-      if(val) {
-        this.days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    allSelected: function (val) {
+      if (val) {
+        this.checkedDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
       }
     }
   },
   methods: {
     processForm () {
       console.log(this.$data)
+    },
+    removeFilter (id) {
+      var index = this.filters.findIndex((element) => { return element.id === id })
+      console.log(index)
+      this.filters.splice(index, 1)
     },
     newFilter () {
       this.filters.push({
@@ -101,13 +107,13 @@ export default {
       filterOptions: datapointSchema.properties,
       filters: [{
         id: nextFilterId,
-        selectedOption: {},
+        selectedOption: datapointSchema.properties.apparentTemperature,
         selectData: {
           string: '',
           enum: '',
           number: {
-            compareOption: '',
-            num: '',
+            compareOption: 'more',
+            num: 60,
             range: ''
           }
         }
