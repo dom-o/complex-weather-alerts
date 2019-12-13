@@ -1,8 +1,8 @@
 <template>
 <div>
   <form @submit.prevent="processForm">
-    I like to go <input v-model="activity" type="text">
-    at <input v-model.number="latitude" type="number" step="any" min="-90" max="90" required> <input v-model.number="longitude" type="number" step="any" min="-180" max="180" required>
+    I like to go <input v-model="activityName" type="text">
+    at <input v-model.number="location.latitude" type="number" step="any" min="-90" max="90" required> <input v-model.number="location.longitude" type="number" step="any" min="-180" max="180" required>
     when the <template v-for="filter in filters">
       <select :key="filter.id+'selectedOption'" v-model="filter.selectedOption" >
         <option v-for="(option, optionName) in filterOptions" :key="optionName" :value="option">
@@ -11,27 +11,24 @@
       </select>
       {{ filter.selectedOption.description }}
       is
-      <template v-if="filter.selectedOption.type==='string'">
-        <input :key="filter.id+'string'" type="text" v-model="filter.selectData.string">
-      </template>
-      <template v-else-if="filter.selectedOption.enum">
-        <select :key="filter.id+'enum'" v-model="filter.selectData.enum">
-          <option v-for="item in filter.selectedOption.enum" :key="item" :value="item">{{item}}</option>
+      <template v-if="filter.selectedOption.enum">
+        <select :key="filter.id+'enum'" v-model="filter.num">
+          <option v-for="(item,index) in filter.selectedOption.enum" :key="item" :value="index">{{item}}</option>
         </select>
       </template>
       <template v-else-if="filter.selectedOption.type==='number'">
-        <select :key="filter.id+'compareOption'" v-model="filter.selectData.number.compareOption">
+        <select :key="filter.id+'compareOption'" v-model="filter.compareOption">
           <option :key="'exactly'" :value="'exactly'">exactly</option>
           <option :key="'between'" :value="'between'">between</option>
           <option :key="'more'" :value="'more'">more than</option>
           <option :key="'less'" :value="'less'">less than</option>
         </select>
-        <input :key="filter.id+'num'" type="number" step="any" :min="filter.selectedOption.minimum" :max="filter.selectedOption.maximum" v-model.number="filter.selectData.number.num">
-        <template v-if="filter.selectData.number.compareOption==='between'">
-          and <input :key="filter.id+'range'" type="number" step="any" :min="filter.selectedOption.minimum" :max="filter.selectedOption.maximum" v-model.number="filter.selectData.number.range">
+        <input :key="filter.id+'num'" type="number" step="any" :min="filter.selectedOption.minimum" :max="filter.selectedOption.maximum" v-model.number="filter.num">
+        <template v-if="filter.compareOption==='between'">
+          and <input :key="filter.id+'range'" type="number" step="any" :min="filter.selectedOption.minimum" :max="filter.selectedOption.maximum" v-model.number="filter.range">
         </template>
       </template>
-      <button type="button" @click="removeFilter(filter.id)">remove this condition</button>
+      <button :key="'remove'+filter.id" type="button" @click="removeFilter(filter.id)">remove this condition</button>
     </template>
     <button type="button" @click="newFilter">more conditions</button>
     I'm free
@@ -62,6 +59,7 @@
 
 <script>
 import datapointSchema from '@/assets/datapoint.json'
+import axios from 'axios'
 
 let nextFilterId = 0
 
@@ -76,10 +74,39 @@ export default {
   },
   methods: {
     processForm () {
-      console.log(this.$data)
+      const data = this.$data
+      const transformedData = {
+        activity_name: data.activityName,
+        monday: data.checkedDays.includes('Monday'),
+        tuesday: data.checkedDays.includes('Tuesday'),
+        wednesday: data.checkedDays.includes('Wednesday'),
+        thursday: data.checkedDays.includes('Thursday'),
+        friday: data.checkedDays.includes('Friday'),
+        saturday: data.checkedDays.includes('Saturday'),
+        sunday: data.checkedDays.includes('Sunday'),
+        advance_notice: data.advanceNotice,
+        recipient: { email: data.email },
+        location: {
+          longitude: data.location.longitude,
+          latitude: data.location.latitude,
+          filters: data.filters.map(
+            filter => ({
+              weather_option: filter.selectedOption.title,
+              number: filter.num,
+              compare_option: filter.compareOption,
+              range: filter.range
+            })
+          )
+        }
+      }
+
+      console.log(JSON.stringify(transformedData))
+      axios.post('http://127.0.0.1:8000/alerts', transformedData)
+        .then(response => { console.log(response) })
+        .catch(error => { console.log(error) })
     },
     removeFilter (id) {
-      var index = this.filters.findIndex((element) => { return element.id === id })
+      const index = this.filters.findIndex((element) => { return element.id === id })
       console.log(index)
       this.filters.splice(index, 1)
     },
@@ -87,36 +114,36 @@ export default {
       this.filters.push({
         id: ++nextFilterId,
         selectedOption: {},
-        selectData: {
-          string: '',
-          enum: '',
-          number: {
-            compareOption: '',
-            num: '',
-            range: ''
-          }
-        }
+        compareOption: '',
+        num: null,
+        range: null
       })
+    },
+    filterProperties (toFilter, unwanted) {
+      return Object.keys(toFilter)
+        .filter(key => !unwanted.includes(key))
+        .reduce((obj, key) => {
+          return {
+            ...obj,
+            [key]: toFilter[key]
+          }
+        }, {})
     }
   },
   data () {
     return {
-      activity: '',
-      latitude: '',
-      longitude: '',
-      filterOptions: datapointSchema.properties,
+      activityName: '',
+      location: {
+        latitude: '',
+        longitude: ''
+      },
+      filterOptions: this.filterProperties(datapointSchema.properties, ['icon', 'summary']),
       filters: [{
         id: nextFilterId,
         selectedOption: datapointSchema.properties.apparentTemperature,
-        selectData: {
-          string: '',
-          enum: '',
-          number: {
-            compareOption: 'more',
-            num: 60,
-            range: ''
-          }
-        }
+        compareOption: 'more',
+        num: 60,
+        range: null
       }],
       allSelected: false,
       checkedDays: [],
