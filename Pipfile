@@ -6,8 +6,13 @@ name = "pypi"
 [packages]
 django = "*"
 djangorestframework = "*"
+celery = "*"
+coverage = "*"
+django-celery-results = "*"
+requests = "*"
 
 [dev-packages]
+django-celery-results = "*"
 
 [requires]
 python_version = "3.6"
