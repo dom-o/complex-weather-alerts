@@ -1,13 +1,16 @@
 node_modules/
 public/
 /dist/
-complexweatheralerts/htmlcov/
+htmlcov/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 local_settings.py
 db.sqlite3
+
+.coverage
+.coveragerc
 
 .idea
 .vscode
