@@ -1,5 +1,5 @@
 <template lang="html">
-<form @submit.prevent="$emit('alert-form-submit', this.$data)">
+<form @submit.prevent="$emit('alert-form-submit', $data)">
   I like to go <input v-model="activityName" type="text">
   at <input v-model.number="latitude" type="number" step="any" min="-90" max="90" required> <input v-model.number="longitude" type="number" step="any" min="-180" max="180" required>
   when the <template v-for="filter in filters">
